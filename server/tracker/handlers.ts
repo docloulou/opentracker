@@ -55,6 +55,21 @@ export async function handleAnnounce(params: {
   const peerId = bufferToHex(params.peerId);
   const event = params.event || 'update';
 
+  // Validate required fields
+  if (!infoHash || infoHash.length !== 40) {
+    console.error(
+      `[Tracker] Invalid infoHash: "${infoHash}" (length=${infoHash?.length}, raw=${typeof params.infoHash})`
+    );
+    return;
+  }
+
+  if (!peerId || peerId.length !== 40) {
+    console.error(
+      `[Tracker] Invalid peerId: "${peerId}" (length=${peerId?.length}, raw=${typeof params.peerId})`
+    );
+    return;
+  }
+
   // ============================================================================
   // Deduplication: Clients announce on ALL network interfaces (IPv4, IPv6, etc.)
   // We only process the first announce per peerId+infoHash+event within the window

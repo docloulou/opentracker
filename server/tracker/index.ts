@@ -35,10 +35,12 @@ export function initTracker(config: TrackerConfig = {}): TrackerServer {
     stats: true,
     trustProxy: true,
     filter: (
-      infoHash: string,
+      infoHashRaw: string,
       params: any,
       cb: (err: Error | null) => void
     ) => {
+      // Normalize infoHash to lowercase for consistent DB queries
+      const infoHash = infoHashRaw.toLowerCase();
       const passkey = params.passkey;
 
       if (!passkey) {

@@ -14,6 +14,9 @@ export default defineEventHandler(async (event) => {
   const totalTorrents = torrentsCountResult[0]?.count || 0;
 
   // Get total peers and seeders from Redis using SCAN for safety
+  // Note: ioredis with keyPrefix - SCAN returns full keys with prefix,
+  // but we need to strip the prefix before passing to other commands
+  const keyPrefix = process.env.REDIS_KEY_PREFIX || 'ot:';
   let totalPeers = 0;
   let totalSeeders = 0;
   let cursor = '0';
@@ -27,7 +30,11 @@ export default defineEventHandler(async (event) => {
         100
       );
       cursor = nextCursor;
-      for (const key of keys) {
+      for (const fullKey of keys) {
+        // Strip the prefix from the key returned by SCAN to avoid double-prefixing
+        const key = fullKey.startsWith(keyPrefix)
+          ? fullKey.slice(keyPrefix.length)
+          : fullKey;
         const peersData = await redis.hgetall(key);
         for (const json of Object.values(peersData)) {
           try {

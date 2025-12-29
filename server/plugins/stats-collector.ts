@@ -24,6 +24,9 @@ export default defineNitroPlugin((nitroApp) => {
       const torrentsCount = torrentsCountResult[0]?.count || 0;
 
       // 3. Peers & Seeders Count (from Redis)
+      // Note: ioredis with keyPrefix - SCAN returns full keys with prefix,
+      // but we need to strip the prefix before passing to other commands
+      const keyPrefix = process.env.REDIS_KEY_PREFIX || 'ot:';
       let peersCount = 0;
       let seedersCount = 0;
       let cursor = '0';
@@ -36,7 +39,11 @@ export default defineNitroPlugin((nitroApp) => {
           100
         );
         cursor = nextCursor;
-        for (const key of keys) {
+        for (const fullKey of keys) {
+          // Strip the prefix from the key returned by SCAN to avoid double-prefixing
+          const key = fullKey.startsWith(keyPrefix)
+            ? fullKey.slice(keyPrefix.length)
+            : fullKey;
           const peersData = await redis.hgetall(key);
           for (const json of Object.values(peersData)) {
             try {

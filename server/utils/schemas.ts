@@ -17,7 +17,7 @@ export const uuidSchema = z
 export const infoHashSchema = z
   .string()
   .regex(
-    /^[a-f0-9]{40}$/,
+    /^[a-fA-F0-9]{40}$/,
     'Invalid info hash format. Expected 40 hex characters'
   )
   .transform((val) => val.toLowerCase());
