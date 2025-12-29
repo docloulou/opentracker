@@ -20,11 +20,11 @@
           <code
             class="flex-1 text-[10px] font-mono bg-bg-primary border border-border px-2 py-1.5 rounded text-text-secondary truncate"
           >
-            http://localhost:8080/announce
+            {{ endpoints.http }}
           </code>
           <button
             class="p-1.5 text-text-muted hover:text-white transition-colors"
-            @click="copyToClipboard('http://localhost:8080/announce')"
+            @click="copyToClipboard(endpoints.http)"
           >
             <Icon name="ph:copy" />
           </button>
@@ -39,11 +39,11 @@
           <code
             class="flex-1 text-[10px] font-mono bg-bg-primary border border-border px-2 py-1.5 rounded text-text-secondary truncate"
           >
-            udp://localhost:8081/announce
+            {{ endpoints.udp }}
           </code>
           <button
             class="p-1.5 text-text-muted hover:text-white transition-colors"
-            @click="copyToClipboard('udp://localhost:8081/announce')"
+            @click="copyToClipboard(endpoints.udp)"
           >
             <Icon name="ph:copy" />
           </button>
@@ -58,11 +58,11 @@
           <code
             class="flex-1 text-[10px] font-mono bg-bg-primary border border-border px-2 py-1.5 rounded text-text-secondary truncate"
           >
-            ws://localhost:8082
+            {{ endpoints.ws }}
           </code>
           <button
             class="p-1.5 text-text-muted hover:text-white transition-colors"
-            @click="copyToClipboard('ws://localhost:8082')"
+            @click="copyToClipboard(endpoints.ws)"
           >
             <Icon name="ph:copy" />
           </button>
@@ -73,6 +73,14 @@
 </template>
 
 <script setup lang="ts">
+const config = useRuntimeConfig();
+
+const endpoints = computed(() => ({
+  http: config.public.trackerHttpUrl as string,
+  udp: config.public.trackerUdpUrl as string,
+  ws: config.public.trackerWsUrl as string,
+}));
+
 function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
 }

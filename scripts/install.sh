@@ -416,6 +416,11 @@ TRACKER_DOMAIN=${TRACKER_DOMAIN}
 MONITORING_DOMAIN=${MONITORING_DOMAIN}
 ACME_EMAIL=${ACME_EMAIL}
 
+# Tracker Announce URLs (displayed in admin dashboard)
+TRACKER_HTTP_URL=https://${TRACKER_DOMAIN}/announce
+TRACKER_UDP_URL=udp://${TRACKER_DOMAIN}:6969/announce
+TRACKER_WS_URL=wss://${TRACKER_DOMAIN}/websocket
+
 # Monitoring
 MONITORING_USER=admin
 # Note: $ escaped as $$ for Docker Compose compatibility
