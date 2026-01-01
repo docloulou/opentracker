@@ -12,6 +12,9 @@ const querySchema = z.object({
  * RSS feed for latest torrents
  */
 export default defineEventHandler(async (event) => {
+
+  await requireUserSession(event);
+
   const query = querySchema.parse(getQuery(event));
 
   const torrents = await db.query.torrents.findMany({

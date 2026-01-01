@@ -35,7 +35,7 @@ services:
       # Redis connection
       REDIS_URL: redis://redis:6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_HOST: redis
+      REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: 6379
       # Tracker announce URLs (displayed in admin dashboard)
       TRACKER_HTTP_URL: ${TRACKER_HTTP_URL:-http://localhost:8080/announce}
