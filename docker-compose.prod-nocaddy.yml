@@ -37,6 +37,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: 6379
+      ADMIN_API_KEY: ${ADMIN_API_KEY}
       # Tracker announce URLs (displayed in admin dashboard)
       TRACKER_HTTP_URL: ${TRACKER_HTTP_URL:-http://localhost:8080/announce}
       TRACKER_UDP_URL: ${TRACKER_UDP_URL:-udp://localhost:8081/announce}

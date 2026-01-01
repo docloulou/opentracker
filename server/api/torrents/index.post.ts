@@ -8,7 +8,7 @@ import { isAdmin } from '../../utils/auth';
 export default defineEventHandler(async (event) => {
   // Check if request comes from API key or logged in user
   let user: User;
-  console.log('isAdmin', isAdmin(event));
+  
   if (isAdmin(event)) {
     // Request with API key - get first admin user from DB
     const adminUser = await db.query.users.findFirst({
