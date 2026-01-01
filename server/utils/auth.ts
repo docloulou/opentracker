@@ -16,7 +16,8 @@ export function requireAdmin(event: any): void {
   const apiKey =
     getHeader(event, 'x-admin-key') ||
     getHeader(event, 'authorization')?.replace('Bearer ', '');
-
+console.log('apiKey', apiKey);
+console.log('ADMIN_API_KEY', ADMIN_API_KEY);
   if (!ADMIN_API_KEY) {
     // No API key configured - only allow in development
     if (process.env.NODE_ENV === 'production') {
