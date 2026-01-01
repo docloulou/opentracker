@@ -3,8 +3,38 @@ import { eq } from 'drizzle-orm';
 import bencode from 'bencode';
 
 export default defineEventHandler(async (event) => {
-  // Require authentication
-  const { user } = await requireUserSession(event);
+  const query = getQuery(event);
+  let passkey = query.passkey as string;
+  
+  if (passkey) {
+    // Validate passkey from database
+    const user = await db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.passkey, passkey),
+      columns: {
+        passkey: true,
+        isBanned: true,
+      },
+    });
+
+    if (!user) {
+      throw createError({
+        statusCode: 401,
+        message: 'Invalid passkey',
+      });
+    }
+
+    if (user.isBanned) {
+      throw createError({
+        statusCode: 403,
+        message: 'User is banned',
+      });
+    }
+  } else {
+    // No passkey in query - require session
+    const { user } = await requireUserSession(event);
+    passkey = user.passkey;
+  }
+  
   const config = useRuntimeConfig();
 
   const hash = getRouterParam(event, 'hash');
@@ -50,7 +80,7 @@ export default defineEventHandler(async (event) => {
 
   // Personalize announce URL
   const trackerUrl = new URL(config.public.trackerHttpUrl as string);
-  trackerUrl.searchParams.set('passkey', user.passkey);
+  trackerUrl.searchParams.set('passkey', passkey);
   const personalizedUrl = trackerUrl.toString();
 
   decoded.announce = Buffer.from(personalizedUrl);

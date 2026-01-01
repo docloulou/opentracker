@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 const querySchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(50),
+  passkey: z.string().optional(),
 });
 
 /**
@@ -12,10 +13,40 @@ const querySchema = z.object({
  * RSS feed for latest torrents
  */
 export default defineEventHandler(async (event) => {
-
-  await requireUserSession(event);
-
   const query = querySchema.parse(getQuery(event));
+
+  // Check if passkey is provided
+  let validPasskey: string | null = null;
+  
+  if (query.passkey && typeof query.passkey === 'string') {
+    // Validate passkey from database
+    const user = await db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.passkey, query.passkey as string),
+      columns: {
+        passkey: true,
+        isBanned: true,
+      },
+    });
+
+    if (!user) {
+      throw createError({
+        statusCode: 401,
+        message: 'Invalid passkey',
+      });
+    }
+
+    if (user.isBanned) {
+      throw createError({
+        statusCode: 403,
+        message: 'User is banned',
+      });
+    }
+
+    validPasskey = user.passkey;
+  } else {
+    // No passkey provided - require session
+    await requireUserSession(event);
+  }
 
   const torrents = await db.query.torrents.findMany({
     where: eq(schema.torrents.isActive, true),
@@ -45,7 +76,9 @@ export default defineEventHandler(async (event) => {
     description: 'Latest torrent uploads on OpenTracker',
     items: enriched.map((t) => ({
       title: t.name,
-      link: `${baseUrl}/torrents/${t.infoHash}`,
+      link: validPasskey
+        ? `${baseUrl}/api/torrents/${t.infoHash}/download?passkey=${validPasskey}`
+        : `${baseUrl}/torrents/${t.infoHash}`,
       description: buildItemDescription(t),
       category: t.category?.name,
       pubDate: new Date(t.createdAt).toUTCString(),

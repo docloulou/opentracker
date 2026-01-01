@@ -2,11 +2,41 @@ import { db, schema } from '../../db';
 import { randomUUID } from 'crypto';
 import parseTorrent from 'parse-torrent';
 import { rateLimit, RATE_LIMITS } from '../../utils/rateLimit';
+import type { User } from '#auth-utils';
+import { isAdmin } from '../../utils/auth';
 
 export default defineEventHandler(async (event) => {
-  // Require authentication
-  const { user } = await requireUserSession(event);
-
+  // Check if request comes from API key or logged in user
+  let user: User;
+  
+  if (isAdmin(event)) {
+    // Request with API key - get first admin user from DB
+    const adminUser = await db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.isAdmin, true),
+    });
+    
+    if (!adminUser) {
+      throw createError({
+        statusCode: 500,
+        message: 'No admin user found in database',
+      });
+    }
+    
+    user = {
+      id: adminUser.id,
+      username: adminUser.username,
+      passkey: adminUser.passkey,
+      isAdmin: adminUser.isAdmin,
+      isModerator: adminUser.isModerator,
+      uploaded: adminUser.uploaded,
+      downloaded: adminUser.downloaded,
+    };
+  } else {
+    // Regular authenticated user
+    const session = await requireUserSession(event);
+    user = session.user;
+  }
+  
   // Rate limit uploads
   rateLimit(event, RATE_LIMITS.mutation);
 
