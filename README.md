@@ -13,6 +13,8 @@ Built with Nuxt 4 • PostgreSQL • Redis
 
 [Features](#-features) • [Quick Start](#-quick-start) • [Security](#-security-architecture) • [Documentation](#-tech-stack)
 
+![OpenTracker Homepage](/public/images/image%20copy%203.png)
+
 </div>
 
 ---
@@ -160,6 +162,20 @@ The **Panic Button** allows administrators to **instantly encrypt all sensitive 
 
 - **Node.js** 20+ • **Docker** & Docker Compose • **npm**
 
+#### DNS Configuration (Required before installation)
+
+> ⚠️ **IMPORTANT**: Before running the installer, you must configure your DNS records to point to your VPS IP address.
+
+Create the following **A records** pointing to your server's IP:
+
+| Subdomain | Record Type | Value |
+|-----------|-------------|-------|
+| `tracker.your-domain.com` | A | Your VPS IP |
+| `announce.your-domain.com` | A | Your VPS IP |
+| `monitoring.your-domain.com` | A | Your VPS IP |
+
+> **Note**: DNS propagation can take up to 24-48 hours, but usually completes within a few minutes. The installer will fail to obtain SSL certificates if DNS is not properly configured.
+
 ### Option 1: Automated Installation (Recommended)
 
 > **Best for production deployments.** Handles dependencies, secrets, SSL, and systemd automatically.
@@ -179,6 +195,20 @@ The installer will:
 - ✅ Set up TLS/SSL with Let's Encrypt
 - ✅ Create systemd service for auto-restart
 - ✅ Configure PostgreSQL, Redis, Caddy, and monitoring
+- ✅ Set up Prometheus + Grafana monitoring
+
+> **📊 Monitoring**: After installation, Grafana is accessible at `https://monitoring.your-domain.com/grafana`
+>
+> Default credentials: `admin` / `admin` (you'll be prompted to change on first login)
+> Having issues with the password ? Just launch : 
+
+```bash
+cd /opt/opentracker
+docker exec -it opentracker-grafana grafana-cli admin reset-admin-password <new-password>
+```
+
+![Grafana Dashboard](/public/images/grafana.png)
+
 
 ### Option 2: Development with Docker
 
@@ -197,6 +227,9 @@ docker compose logs -f app
 ```
 
 **Open [http://localhost:3000](http://localhost:3000)**
+
+![Torrent List](/public/images/image.png)
+![Torrent Details](/public/images/image%20copy%202.png)
 
 ---
 
@@ -249,6 +282,8 @@ docker compose logs -f app
 | Cache    | Redis 7                             | Peer lists, sessions, rate limiting |
 | P2P      | bittorrent-tracker                  | HTTP & WebSocket announces          |
 | Crypto   | Web Crypto API, scrypt, AES-256-GCM | ZKE auth, Panic encryption          |
+| Monitor  | Prometheus + Grafana                | Metrics, dashboards, alerting       |
+
 
 ---
 
@@ -274,6 +309,7 @@ To update your OpenTracker installation to the latest version:
 
 ```bash
 cd /opt/opentracker
+git checkout main
 git pull origin main
 docker compose -f docker-compose.prod.yml down
 docker compose -f docker-compose.prod.yml up -d --build
@@ -316,6 +352,10 @@ npm run build            # Production build
 npx drizzle-kit push     # Push schema changes
 npx drizzle-kit studio   # Database GUI
 ```
+
+![Forum](/public/images/image%20copy%203.png)
+
+![User Profile](/public/images/image%20copy%204.png)
 
 ---
 
